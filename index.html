@@ -14,28 +14,8 @@
 
     <script type="text/babel">
     const languages = {
-      en: {
-        name: 'English',
-        main: 'Main',
-        functions: 'Functions',
-        settings: 'Settings',
-        radian: 'Radian',
-        degree: 'Degree',
-        darkMode: 'Dark Mode',
-        lightMode: 'Light Mode',
-        language: 'Language',
-      },
-      ko: {
-        name: '한국어',
-        main: '메인',
-        functions: '함수',
-        settings: '설정',
-        radian: '호도법',
-        degree: '각도법',
-        darkMode: '다크 모드',
-        lightMode: '라이트 모드',
-        language: '언어',
-      },
+      en: { name: 'English', main: 'Main', functions: 'Functions', settings: 'Settings', radian: 'Radian', degree: 'Degree', darkMode: 'Dark Mode', lightMode: 'Light Mode', language: 'Language' },
+      ko: { name: '한국어', main: '메인', functions: '함수', settings: '설정', radian: '호도법', degree: '각도법', darkMode: '다크 모드', lightMode: '라이트 모드', language: '언어' },
       // ... 추가 언어들
     };
 
@@ -51,20 +31,13 @@
       const [language, setLanguage] = React.useState('en');
       const inputRef = React.useRef(null);
 
-      // 초기 렌더 후 커서 위치 지정
+      // 계산기의 상태를 유지하는 부분
       React.useEffect(() => {
         if (inputRef.current) {
           inputRef.current.focus();
           inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
         }
       }, [cursorPosition, display]);
-
-      // 언어 변경 함수
-      const changeLanguage = () => {
-        const currentIndex = languageOrder.indexOf(language);
-        const nextIndex = (currentIndex + 1) % languageOrder.length;
-        setLanguage(languageOrder[nextIndex]);
-      };
 
       const handleClick = (value) => {
         setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
@@ -97,14 +70,6 @@
         }
       };
 
-      const handleCursorMove = (direction) => {
-        if (direction === 'left' && cursorPosition > 0) {
-          setCursorPosition(prev => prev - 1);
-        } else if (direction === 'right' && cursorPosition < display.length) {
-          setCursorPosition(prev => prev + 1);
-        }
-      };
-
       const handleUndo = () => {
         if (historyIndex > 0) {
           setHistoryIndex(prev => prev - 1);
@@ -125,18 +90,18 @@
         }
       };
 
+      // 언어만 변경하고 나머지 상태는 그대로 유지
+      const changeLanguage = () => {
+        const currentIndex = languageOrder.indexOf(language);
+        const nextIndex = (currentIndex + 1) % languageOrder.length;
+        setLanguage(languageOrder[nextIndex]);
+      };
+
       const mainButtons = [
         ['a²', 'aᵇ', '|a|', '7', '8', '9', '÷', '%', 'a/b'],
         ['√', 'ⁿ√', 'π', '4', '5', '6', '×', '←', '→'],
         ['sin', 'cos', 'tan', '1', '2', '3', '-', '⌫', '⌫'],
         ['(', ')', '.', '0', '.', 'Ans', '+', '=']
-      ];
-
-      const functionButtons = [
-        ['sin', 'cos', 'tan', 'a^b', '√', 'ⁿ√'],
-        ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'e^x', 'abs', 'round'],
-        ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
-        ['nPr', 'nCr', '!', 'e', 'π', '⏎']
       ];
 
       const renderButtons = (buttons) => (
@@ -150,13 +115,9 @@
                   else if (btn === '÷') handleClick('/');
                   else if (btn === '×') handleClick('*');
                   else if (btn === '⌫') handleBackspace();
-                  else if (btn === '⏎') handleCalculate();
                   else handleClick(btn);
                 }}
-                className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} 
-                  border border-gray-600 rounded-md ${
-                  btn === '⏎' ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''
-                }`}
+                className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} border border-gray-600 rounded-md`}
               >
                 {btn}
               </button>
@@ -175,44 +136,23 @@
           <input
             type="text"
             value={display}
-            onChange={(e) => {
-              setDisplay(e.target.value);
-              setCursorPosition(e.target.selectionStart);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowLeft') handleCursorMove('left');
-              if (e.key === 'ArrowRight') handleCursorMove('right');
-              if (e.key === 'Enter') handleCalculate();
-            }}
             ref={inputRef}
+            readOnly
             className={`w-full mb-2 text-right text-xl p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}
-            style={{ caretColor: isDarkMode ? 'white' : 'black' }}
           />
-          <div className="w-full">
-            <div className="grid w-full grid-cols-5 mb-2">
-              <button className="text-xs">{languages[language].main}</button>
-              <button className="text-xs">{languages[language].functions}</button>
-              <button className="text-xs">{languages[language].settings}</button>
-              <button onClick={handleUndo} disabled={historyIndex <= 0} className="p-1">⟲</button>
-              <button onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="p-1">⟳</button>
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <button onClick={changeLanguage} className="text-xs flex items-center">
-                🌐 {languages[language].name}
-              </button>
-              <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
-                {isRadian ? languages[language].radian : languages[language].degree}
-              </button>
-            </div>
-            {renderButtons(mainButtons)}
-            <div className="mt-4">
-              {renderButtons(functionButtons)}
-            </div>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full mb-2">
-              {isDarkMode ? '☀️' : '🌙'}
-              {isDarkMode ? languages[language].lightMode : languages[language].darkMode}
+          <div className="flex justify-between items-center mb-2">
+            <button onClick={changeLanguage} className="text-xs flex items-center">
+              🌐 {languages[language].name}
+            </button>
+            <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
+              {isRadian ? languages[language].radian : languages[language].degree}
             </button>
           </div>
+          {renderButtons(mainButtons)}
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full mb-2">
+            {isDarkMode ? '☀️' : '🌙'}
+            {isDarkMode ? languages[language].lightMode : languages[language].darkMode}
+          </button>
         </div>
       );
     };
