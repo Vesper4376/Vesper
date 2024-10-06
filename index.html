@@ -15,38 +15,51 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    // 여기에 올리신 calculator.tsx 코드를 넣어서 작동하게 합니다.
     const Calculator = () => {
       const [display, setDisplay] = React.useState('');
       const [history, setHistory] = React.useState([]);
-      const [historyIndex, setHistoryIndex] = React.useState(-1);
-      const [cursorPosition, setCursorPosition] = React.useState(0);
-      const [isDarkMode, setIsDarkMode] = React.useState(true);
-      const [isRadian, setIsRadian] = React.useState(true);
-      const [language, setLanguage] = React.useState('en');
 
       const handleClick = (value) => {
         setDisplay(prev => prev + value);
       };
 
+      const handleClear = () => {
+        setDisplay('');
+      };
+
       const handleCalculate = () => {
         try {
-          const result = eval(display).toString();
-          setDisplay(result);
+          const result = eval(display).toString(); // 입력된 수식을 계산
+          setDisplay(result); // 계산 결과를 표시
+          setHistory([...history, `${display} = ${result}`]); // 히스토리에 추가
         } catch (error) {
           setDisplay('Error');
         }
       };
 
       return (
-        <div className="calculator">
-          <input type="text" value={display} readOnly />
-          <div>
-            <button onClick={() => handleClick('1')}>1</button>
-            <button onClick={() => handleClick('2')}>2</button>
-            <button onClick={() => handleClick('3')}>3</button>
-            <button onClick={handleCalculate}>=</button>
-            <button onClick={() => setDisplay('')}>C</button>
+        <div className="p-4 max-w-md mx-auto bg-white rounded-lg shadow-md">
+          <h1 className="text-xl font-bold mb-4">과학 계산기</h1>
+          <div className="mb-2">
+            <input type="text" value={display} readOnly className="w-full p-2 border border-gray-300 rounded" />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            <button onClick={() => handleClick('1')} className="p-2 bg-blue-500 text-white rounded">1</button>
+            <button onClick={() => handleClick('2')} className="p-2 bg-blue-500 text-white rounded">2</button>
+            <button onClick={() => handleClick('3')} className="p-2 bg-blue-500 text-white rounded">3</button>
+            <button onClick={handleClear} className="p-2 bg-red-500 text-white rounded">C</button>
+            <button onClick={() => handleClick('4')} className="p-2 bg-blue-500 text-white rounded">4</button>
+            <button onClick={() => handleClick('5')} className="p-2 bg-blue-500 text-white rounded">5</button>
+            <button onClick={() => handleClick('6')} className="p-2 bg-blue-500 text-white rounded">6</button>
+            <button onClick={() => handleClick('+')} className="p-2 bg-green-500 text-white rounded">+</button>
+            <button onClick={() => handleClick('7')} className="p-2 bg-blue-500 text-white rounded">7</button>
+            <button onClick={() => handleClick('8')} className="p-2 bg-blue-500 text-white rounded">8</button>
+            <button onClick={() => handleClick('9')} className="p-2 bg-blue-500 text-white rounded">9</button>
+            <button onClick={() => handleClick('-')} className="p-2 bg-green-500 text-white rounded">-</button>
+            <button onClick={() => handleClick('0')} className="p-2 bg-blue-500 text-white rounded">0</button>
+            <button onClick={() => handleClick('*')} className="p-2 bg-green-500 text-white rounded">*</button>
+            <button onClick={() => handleClick('/')} className="p-2 bg-green-500 text-white rounded">/</button>
+            <button onClick={handleCalculate} className="p-2 bg-yellow-500 text-white rounded">=</button>
           </div>
         </div>
       );
