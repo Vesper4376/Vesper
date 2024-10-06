@@ -1,0 +1,319 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Moon, Sun, RotateCcw, RotateCw, Globe } from 'lucide-react';
+
+const languages = {
+  en: {
+    name: 'English',
+    main: 'Main',
+    functions: 'Functions',
+    settings: 'Settings',
+    radian: 'Radian',
+    degree: 'Degree',
+    darkMode: 'Dark Mode',
+    lightMode: 'Light Mode',
+    language: 'Language',
+  },
+  ko: {
+    name: '한국어',
+    main: '메인',
+    functions: '함수',
+    settings: '설정',
+    radian: '호도법',
+    degree: '각도법',
+    darkMode: '다크 모드',
+    lightMode: '라이트 모드',
+    language: '언어',
+  },
+  ja: {
+    name: '日本語',
+    main: 'メイン',
+    functions: '関数',
+    settings: '設定',
+    radian: 'ラジアン',
+    degree: '度',
+    darkMode: 'ダークモード',
+    lightMode: 'ライトモード',
+    language: '言語',
+  },
+  ru: {
+    name: 'Русский',
+    main: 'Главная',
+    functions: 'Функции',
+    settings: 'Настройки',
+    radian: 'Радиан',
+    degree: 'Градус',
+    darkMode: 'Темный режим',
+    lightMode: 'Светлый режим',
+    language: 'Язык',
+  },
+  zh: {
+    name: '中文',
+    main: '主要',
+    functions: '函数',
+    settings: '设置',
+    radian: '弧度',
+    degree: '角度',
+    darkMode: '深色模式',
+    lightMode: '浅色模式',
+    language: '语言',
+  },
+  vi: {
+    name: 'Tiếng Việt',
+    main: 'Chính',
+    functions: 'Chức năng',
+    settings: 'Cài đặt',
+    radian: 'Radian',
+    degree: 'Độ',
+    darkMode: 'Chế độ tối',
+    lightMode: 'Chế độ sáng',
+    language: 'Ngôn ngữ',
+  },
+  hi: {
+    name: 'हिन्दी',
+    main: 'मुख्य',
+    functions: 'फ़ंक्शन',
+    settings: 'सेटिंग्स',
+    radian: 'रेडियन',
+    degree: 'डिग्री',
+    darkMode: 'डार्क मोड',
+    lightMode: 'लाइट मोड',
+    language: 'भाषा',
+  },
+  id: {
+    name: 'Bahasa Indonesia',
+    main: 'Utama',
+    functions: 'Fungsi',
+    settings: 'Pengaturan',
+    radian: 'Radian',
+    degree: 'Derajat',
+    darkMode: 'Mode Gelap',
+    lightMode: 'Mode Terang',
+    language: 'Bahasa',
+  },
+};
+
+const languageOrder = ['en', 'ko', 'ja', 'ru', 'zh', 'vi', 'hi', 'id'];
+
+const Calculator = () => {
+  const [display, setDisplay] = useState('');
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isRadian, setIsRadian] = useState(true);
+  const [language, setLanguage] = useState('en');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+    }
+  }, [cursorPosition, display]);
+
+  const handleClick = (value) => {
+    setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
+    setCursorPosition(prev => prev + value.length);
+  };
+
+  const handleClear = () => {
+    setDisplay('');
+    setCursorPosition(0);
+  };
+
+  const handleCalculate = () => {
+    try {
+      const result = eval(display).toString();
+      const newEntry = `${display} = ${result}`;
+      setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
+      setHistoryIndex(prev => prev + 1);
+      setDisplay(result);
+      setCursorPosition(result.length);
+    } catch (error) {
+      setDisplay('Error');
+      setCursorPosition(5);
+    }
+  };
+
+  const handleBackspace = () => {
+    if (cursorPosition > 0) {
+      setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
+      setCursorPosition(prev => prev - 1);
+    }
+  };
+
+  const handleCursorMove = (direction) => {
+    if (direction === 'left' && cursorPosition > 0) {
+      setCursorPosition(prev => prev - 1);
+    } else if (direction === 'right' && cursorPosition < display.length) {
+      setCursorPosition(prev => prev + 1);
+    }
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+      const previousEntry = history[historyIndex - 1];
+      const [expression] = previousEntry.split(' = ');
+      setDisplay(expression);
+      setCursorPosition(expression.length);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+      const nextEntry = history[historyIndex + 1];
+      const [expression] = nextEntry.split(' = ');
+      setDisplay(expression);
+      setCursorPosition(expression.length);
+    }
+  };
+
+  const changeLanguage = () => {
+    const currentIndex = languageOrder.indexOf(language);
+    const nextIndex = (currentIndex + 1) % languageOrder.length;
+    setLanguage(languageOrder[nextIndex]);
+  };
+
+  const mainButtons = [
+    ['a²', 'aᵇ', '|a|', '7', '8', '9', '÷', '%', 'a/b'],
+    ['√', 'ⁿ√', 'π', '4', '5', '6', '×', '←', '→'],
+    ['sin', 'cos', 'tan', '1', '2', '3', '-', '⌫', '⌫'],
+    ['(', ')', '.', '0', '.', 'Ans', '+', '=']
+  ];
+
+  const functionButtons = [
+    ['sin', 'cos', 'tan', 'a^b', '√', 'ⁿ√'],
+    ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'e^x', 'abs', 'round'],
+    ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
+    ['nPr', 'nCr', '!', 'e', 'π', '⏎']
+  ];
+
+  const renderButtons = (buttons) => (
+    <div className="grid grid-cols-6 gap-1">
+      {buttons.map((row, rowIndex) => 
+        row.map((btn, colIndex) => (
+          <Button
+            key={`${rowIndex}-${colIndex}`}
+            onClick={() => {
+              if (btn === '=') handleCalculate();
+              else if (btn === '÷') handleClick('/');
+              else if (btn === '×') handleClick('*');
+              else if (btn === '⌫') handleBackspace();
+              else if (btn === '⏎') handleCalculate();
+              else handleClick(btn);
+            }}
+            className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} 
+              border border-gray-600 rounded-md ${
+              btn === '⏎' ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''
+            } ${
+              (btn === 'tan' || btn === 'tan⁻¹' || btn === 'stdevp' || btn === '!') ? 'mr-2' : ''
+            }`}
+          >
+            {btn}
+          </Button>
+        ))
+      )}
+    </div>
+  );
+
+  return (
+    <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+      <div className="mb-2 text-right text-sm h-20 overflow-y-auto font-mono">
+        {history.slice(Math.max(0, historyIndex - 2), historyIndex + 1).map((item, index) => (
+          <div key={index} className="mb-1">{item}</div>
+        ))}
+      </div>
+      <Input
+        type="text"
+        value={display}
+        onChange={(e) => {
+          setDisplay(e.target.value);
+          setCursorPosition(e.target.selectionStart);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') handleCursorMove('left');
+          if (e.key === 'ArrowRight') handleCursorMove('right');
+          if (e.key === 'Enter') handleCalculate();
+        }}
+        ref={inputRef}
+        className={`w-full mb-2 text-right text-xl p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}
+        style={{ caretColor: isDarkMode ? 'white' : 'black' }}
+      />
+      <Tabs defaultValue="main" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 mb-2">
+          <TabsTrigger value="main" className="text-xs">{languages[language].main}</TabsTrigger>
+          <TabsTrigger value="functions" className="text-xs">{languages[language].functions}</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs">{languages[language].settings}</TabsTrigger>
+          <Button onClick={handleUndo} disabled={historyIndex <= 0} className="p-1"><RotateCcw size={16} /></Button>
+          <Button onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="p-1"><RotateCw size={16} /></Button>
+        </TabsList>
+        
+        <TabsContent value="main">
+          <div className="flex justify-between items-center mb-2">
+            <Button onClick={changeLanguage} className="text-xs flex items-center">
+              <Globe size={16} className="mr-2" />
+              {languages[language].name}
+            </Button>
+            <Button onClick={() => setIsRadian(!isRadian)} className="text-xs">
+              {isRadian ? languages[language].radian : languages[language].degree}
+            </Button>
+          </div>
+          <div className="grid grid-cols-9 gap-1">
+            {mainButtons.map((row, rowIndex) => 
+              row.map((btn, colIndex) => (
+                <Button
+                  key={`${rowIndex}-${colIndex}`}
+                  onClick={() => {
+                    if (btn === '=') handleCalculate();
+                    else if (btn === '÷') handleClick('/');
+                    else if (btn === '×') handleClick('*');
+                    else if (btn === '⌫') handleBackspace();
+                    else if (btn === '←') handleCursorMove('left');
+                    else if (btn === '→') handleCursorMove('right');
+                    else handleClick(btn);
+                  }}
+                  className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} 
+                    border border-gray-600 rounded-md ${
+                    rowIndex === 3 && colIndex === 7 ? 'col-span-2' : ''
+                  } ${
+                    colIndex === 2 || colIndex === 6 ? 'mr-2' : ''
+                  }`}
+                >
+                  {btn}
+                </Button>
+              ))
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="functions">
+          <div className="flex justify-between items-center mb-2">
+            <Button onClick={changeLanguage} className="text-xs flex items-center">
+              <Globe size={16} className="mr-2" />
+              {languages[language].name}
+            </Button>
+            <Button onClick={() => setIsRadian(!isRadian)} className="text-xs">
+              {isRadian ? languages[language].radian : languages[language].degree}
+            </Button>
+          </div>
+          {renderButtons(functionButtons)}
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <Button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full mb-2">
+            {isDarkMode ? <Sun size={16} className="mr-2" /> : <Moon size={16} className="mr-2" />}
+            {isDarkMode ? languages[language].lightMode : languages[language].darkMode}
+          </Button>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Calculator;
