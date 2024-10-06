@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>다국어 과학 계산기</title>
+    <!-- React와 Babel 추가 -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- Tailwind CSS 추가 -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -16,143 +18,88 @@
     const languages = {
       en: { name: 'English', main: 'Main', functions: 'Functions', settings: 'Settings', radian: 'Radian', degree: 'Degree', darkMode: 'Dark Mode', lightMode: 'Light Mode', language: 'Language' },
       ko: { name: '한국어', main: '메인', functions: '함수', settings: '설정', radian: '호도법', degree: '각도법', darkMode: '다크 모드', lightMode: '라이트 모드', language: '언어' },
-      // ... 추가 언어들
     };
 
-    const languageOrder = ['en', 'ko', 'ja', 'ru', 'zh', 'vi', 'hi', 'id'];
+    const languageOrder = ['en', 'ko'];
 
     const Calculator = () => {
       const [display, setDisplay] = React.useState('');
-      const [history, setHistory] = React.useState([]);
-      const [historyIndex, setHistoryIndex] = React.useState(-1);
-      const [cursorPosition, setCursorPosition] = React.useState(0);
       const [isDarkMode, setIsDarkMode] = React.useState(true);
       const [isRadian, setIsRadian] = React.useState(true);
       const [language, setLanguage] = React.useState('en');
       const inputRef = React.useRef(null);
 
-      // 계산기의 상태를 유지하는 부분
-      React.useEffect(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-          inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
-        }
-      }, [cursorPosition, display]);
-
-      const handleClick = (value) => {
-        setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
-        setCursorPosition(prev => prev + value.length);
-      };
-
-      const handleClear = () => {
-        setDisplay('');
-        setCursorPosition(0);
-      };
-
-      const handleCalculate = () => {
-        try {
-          const result = eval(display).toString();
-          const newEntry = `${display} = ${result}`;
-          setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
-          setHistoryIndex(prev => prev + 1);
-          setDisplay(result);
-          setCursorPosition(result.length);
-        } catch (error) {
-          setDisplay('Error');
-          setCursorPosition(5);
-        }
-      };
-
-      const handleBackspace = () => {
-        if (cursorPosition > 0) {
-          setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
-          setCursorPosition(prev => prev - 1);
-        }
-      };
-
-      const handleUndo = () => {
-        if (historyIndex > 0) {
-          setHistoryIndex(prev => prev - 1);
-          const previousEntry = history[historyIndex - 1];
-          const [expression] = previousEntry.split(' = ');
-          setDisplay(expression);
-          setCursorPosition(expression.length);
-        }
-      };
-
-      const handleRedo = () => {
-        if (historyIndex < history.length - 1) {
-          setHistoryIndex(prev => prev + 1);
-          const nextEntry = history[historyIndex + 1];
-          const [expression] = nextEntry.split(' = ');
-          setDisplay(expression);
-          setCursorPosition(expression.length);
-        }
-      };
-
-      // 언어만 변경하고 나머지 상태는 그대로 유지
+      // 언어 변경 함수
       const changeLanguage = () => {
         const currentIndex = languageOrder.indexOf(language);
         const nextIndex = (currentIndex + 1) % languageOrder.length;
         setLanguage(languageOrder[nextIndex]);
       };
 
-      const mainButtons = [
-        ['a²', 'aᵇ', '|a|', '7', '8', '9', '÷', '%', 'a/b'],
-        ['√', 'ⁿ√', 'π', '4', '5', '6', '×', '←', '→'],
-        ['sin', 'cos', 'tan', '1', '2', '3', '-', '⌫', '⌫'],
-        ['(', ')', '.', '0', '.', 'Ans', '+', '=']
-      ];
+      const handleClick = (value) => {
+        setDisplay((prev) => prev + value);
+      };
 
-      const renderButtons = (buttons) => (
-        <div className="grid grid-cols-6 gap-1">
-          {buttons.map((row, rowIndex) => 
-            row.map((btn, colIndex) => (
-              <button
-                key={`${rowIndex}-${colIndex}`}
-                onClick={() => {
-                  if (btn === '=') handleCalculate();
-                  else if (btn === '÷') handleClick('/');
-                  else if (btn === '×') handleClick('*');
-                  else if (btn === '⌫') handleBackspace();
-                  else handleClick(btn);
-                }}
-                className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} border border-gray-600 rounded-md`}
-              >
-                {btn}
-              </button>
-            ))
-          )}
-        </div>
-      );
+      const handleClear = () => {
+        setDisplay('');
+      };
+
+      const handleCalculate = () => {
+        try {
+          const result = eval(display).toString();
+          setDisplay(result);
+        } catch (error) {
+          setDisplay('Error');
+        }
+      };
 
       return (
-        <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-          <div className="mb-2 text-right text-sm h-20 overflow-y-auto font-mono">
-            {history.slice(Math.max(0, historyIndex - 2), historyIndex + 1).map((item, index) => (
-              <div key={index} className="mb-1">{item}</div>
-            ))}
+        <div className={`p-4 max-w-sm mx-auto mt-10 rounded-lg shadow-md ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'}`}>
+          <div className="mb-4">
+            <input
+              type="text"
+              value={display}
+              readOnly
+              ref={inputRef}
+              className={`w-full p-2 text-right border rounded ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} `}
+            />
           </div>
-          <input
-            type="text"
-            value={display}
-            ref={inputRef}
-            readOnly
-            className={`w-full mb-2 text-right text-xl p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}
-          />
-          <div className="flex justify-between items-center mb-2">
-            <button onClick={changeLanguage} className="text-xs flex items-center">
+          <div className="grid grid-cols-4 gap-2">
+            {/* 숫자와 연산 버튼들 */}
+            <button onClick={() => handleClick('7')} className="p-2 bg-blue-500 text-white rounded">7</button>
+            <button onClick={() => handleClick('8')} className="p-2 bg-blue-500 text-white rounded">8</button>
+            <button onClick={() => handleClick('9')} className="p-2 bg-blue-500 text-white rounded">9</button>
+            <button onClick={() => handleClick('/')} className="p-2 bg-green-500 text-white rounded">/</button>
+
+            <button onClick={() => handleClick('4')} className="p-2 bg-blue-500 text-white rounded">4</button>
+            <button onClick={() => handleClick('5')} className="p-2 bg-blue-500 text-white rounded">5</button>
+            <button onClick={() => handleClick('6')} className="p-2 bg-blue-500 text-white rounded">6</button>
+            <button onClick={() => handleClick('*')} className="p-2 bg-green-500 text-white rounded">×</button>
+
+            <button onClick={() => handleClick('1')} className="p-2 bg-blue-500 text-white rounded">1</button>
+            <button onClick={() => handleClick('2')} className="p-2 bg-blue-500 text-white rounded">2</button>
+            <button onClick={() => handleClick('3')} className="p-2 bg-blue-500 text-white rounded">3</button>
+            <button onClick={() => handleClick('-')} className="p-2 bg-green-500 text-white rounded">-</button>
+
+            <button onClick={handleClear} className="p-2 bg-red-500 text-white rounded">C</button>
+            <button onClick={() => handleClick('0')} className="p-2 bg-blue-500 text-white rounded">0</button>
+            <button onClick={() => handleClick('.')} className="p-2 bg-blue-500 text-white rounded">.</button>
+            <button onClick={() => handleClick('+')} className="p-2 bg-green-500 text-white rounded">+</button>
+
+            <button onClick={handleCalculate} className="p-2 col-span-4 bg-yellow-500 text-white rounded">=</button>
+          </div>
+
+          <div className="flex justify-between mt-4">
+            <button onClick={changeLanguage} className="text-xs">
               🌐 {languages[language].name}
             </button>
             <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
               {isRadian ? languages[language].radian : languages[language].degree}
             </button>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-xs">
+              {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
           </div>
-          {renderButtons(mainButtons)}
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full mb-2">
-            {isDarkMode ? '☀️' : '🌙'}
-            {isDarkMode ? languages[language].lightMode : languages[language].darkMode}
-          </button>
         </div>
       );
     };
