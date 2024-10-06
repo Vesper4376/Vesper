@@ -4,24 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>다국어 과학 계산기</title>
+    <!-- React와 Babel 추가 -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- Tailwind CSS 추가 (선택 사항) -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-    // 여기에 우리의 React 계산기 코드를 그대로 붙여넣습니다.
+    // 여기에 올리신 calculator.tsx 코드를 넣어서 작동하게 합니다.
     const Calculator = () => {
-      // React 계산기 코드 시작
-      const [display, setDisplay] = useState('');
-      const [history, setHistory] = useState([]);
-      const [cursorPosition, setCursorPosition] = useState(0);
+      const [display, setDisplay] = React.useState('');
+      const [history, setHistory] = React.useState([]);
+      const [historyIndex, setHistoryIndex] = React.useState(-1);
+      const [cursorPosition, setCursorPosition] = React.useState(0);
+      const [isDarkMode, setIsDarkMode] = React.useState(true);
+      const [isRadian, setIsRadian] = React.useState(true);
+      const [language, setLanguage] = React.useState('en');
+
       const handleClick = (value) => {
         setDisplay(prev => prev + value);
       };
+
       const handleCalculate = () => {
         try {
           const result = eval(display).toString();
@@ -30,16 +37,20 @@
           setDisplay('Error');
         }
       };
+
       return (
-        <div>
+        <div className="calculator">
           <input type="text" value={display} readOnly />
-          <button onClick={() => handleClick('1')}>1</button>
-          <button onClick={() => handleClick('2')}>2</button>
-          <button onClick={handleCalculate}>=</button>
+          <div>
+            <button onClick={() => handleClick('1')}>1</button>
+            <button onClick={() => handleClick('2')}>2</button>
+            <button onClick={() => handleClick('3')}>3</button>
+            <button onClick={handleCalculate}>=</button>
+            <button onClick={() => setDisplay('')}>C</button>
+          </div>
         </div>
       );
     };
-    // React 계산기 코드 끝
 
     ReactDOM.render(<Calculator />, document.getElementById('root'));
     </script>
