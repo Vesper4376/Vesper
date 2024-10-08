@@ -44,8 +44,6 @@
         lightMode: 'Light Mode',
         language: 'Language',
         title: 'Free Calculator',
-        addBookmark: 'Add to Bookmarks',
-        bookmarkInstructions: 'Press CTRL + D (or Cmd + D on Mac) to bookmark this page.'
       },
       ko: {
         name: '한국어',
@@ -58,8 +56,6 @@
         lightMode: '라이트 모드',
         language: '언어',
         title: '무료 계산기',
-        addBookmark: '즐겨찾기에 추가',
-        bookmarkInstructions: '이 페이지를 북마크하려면 CTRL + D (맥에서는 Cmd + D)를 누르세요.'
       },
     };
 
@@ -137,16 +133,6 @@
 
       const changeLanguage = () => {
         setLanguage(prev => prev === 'en' ? 'ko' : 'en');
-      };
-
-      const addBookmark = () => {
-        if (window.sidebar && window.sidebar.addPanel) { // Firefox < 23
-          window.sidebar.addPanel(document.title, window.location.href, '');
-        } else if (window.external && ('AddFavorite' in window.external)) { // IE
-          window.external.AddFavorite(window.location.href, document.title);
-        } else { // 크롬, 사파리 등 모던 브라우저
-          alert(languages[language].bookmarkInstructions);
-        }
       };
 
       const mainButtons = [
@@ -286,55 +272,17 @@
               </div>
             )}
           </div>
-          
+        </div>
+      );
+    };
+     
           {/* 북마크 버튼 추가 */}
           <div className="mt-4 text-center">
             <button
               onClick={addBookmark}
               className={`px-4 py-2 text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition duration-300
-const Calculator = () => {
-  // ... 기존 상태 및 함수들 ...
-
-  const languages = {
-    en: {
-      // ... 기존 항목들 ...
-      addBookmark: 'Add to Bookmarks',
-      bookmarkInstructions: 'Press CTRL + D (or Cmd + D on Mac) to bookmark this page.'
-    },
-    ko: {
-      // ... 기존 항목들 ...
-      addBookmark: '즐겨찾기에 추가',
-      bookmarkInstructions: '이 페이지를 북마크하려면 CTRL + D (맥에서는 Cmd + D)를 누르세요.'
-    },
-  };
-
-  const addBookmark = () => {
-    if (window.sidebar && window.sidebar.addPanel) { // Firefox < 23
-      window.sidebar.addPanel(document.title, window.location.href, '');
-    } else if (window.external && ('AddFavorite' in window.external)) { // IE
-      window.external.AddFavorite(window.location.href, document.title);
-    } else { // 크롬, 사파리 등 모던 브라우저
-      alert(languages[language].bookmarkInstructions);
-    }
-  };
-
-  // ... 기존 렌더링 로직 ...
-
-  return (
-    <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-      <h1 className="text-2xl font-bold text-center mb-4">{languages[language].title}</h1>
-      {/* 기존 계산기 UI 코드 */}
-      {/* ... */}
-      
-      {/* 북마크 버튼 추가 */}
-      <div className="mt-4 text-center">
-        <button
-          onClick={addBookmark}
-          className={`px-4 py-2 text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition duration-300`}
-        >
-          {languages[language].addBookmark}
-        </button>
-      </div>
-    </div>
-  );
-};
+              
+    ReactDOM.render(<Calculator />, document.getElementById('root'));
+    </script>
+</body>
+</html>
