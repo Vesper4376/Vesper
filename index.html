@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다국어 과학 계산기</title>
+    <title>이중 언어 과학 계산기</title>
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -36,10 +36,7 @@
         lightMode: '라이트 모드',
         language: '언어',
       },
-      // ... (다른 언어들도 여기에 추가)
     };
-
-    const languageOrder = ['en', 'ko', 'ja', 'ru', 'zh', 'vi', 'hi', 'id'];
 
     const Calculator = () => {
       const [display, setDisplay] = React.useState('');
@@ -73,10 +70,9 @@
         try {
           const result = eval(display).toString();
           const newEntry = `${display} = ${result}`;
-          setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
-          setHistoryIndex(prev => prev + 1);
-          setDisplay(result);
-          setCursorPosition(result.length);
+          setHistory(prev => [...prev, newEntry]);
+          setDisplay('');
+          setCursorPosition(0);
         } catch (error) {
           setDisplay('Error');
           setCursorPosition(5);
@@ -98,30 +94,8 @@
         }
       };
 
-      const handleUndo = () => {
-        if (historyIndex > 0) {
-          setHistoryIndex(prev => prev - 1);
-          const previousEntry = history[historyIndex - 1];
-          const [expression] = previousEntry.split(' = ');
-          setDisplay(expression);
-          setCursorPosition(expression.length);
-        }
-      };
-
-      const handleRedo = () => {
-        if (historyIndex < history.length - 1) {
-          setHistoryIndex(prev => prev + 1);
-          const nextEntry = history[historyIndex + 1];
-          const [expression] = nextEntry.split(' = ');
-          setDisplay(expression);
-          setCursorPosition(expression.length);
-        }
-      };
-
       const changeLanguage = () => {
-        const currentIndex = languageOrder.indexOf(language);
-        const nextIndex = (currentIndex + 1) % languageOrder.length;
-        setLanguage(languageOrder[nextIndex]);
+        setLanguage(prev => prev === 'en' ? 'ko' : 'en');
       };
 
       const mainButtons = [
@@ -169,7 +143,7 @@
       return (
         <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
           <div className="mb-2 text-right text-sm h-20 overflow-y-auto font-mono">
-            {history.slice(Math.max(0, historyIndex - 2), historyIndex + 1).map((item, index) => (
+            {history.slice(-3).map((item, index) => (
               <div key={index} className="mb-1">{item}</div>
             ))}
           </div>
@@ -194,16 +168,15 @@
               <button onClick={() => setActiveTab('main')} className={`text-xs ${activeTab === 'main' ? 'font-bold' : ''}`}>{languages[language].main}</button>
               <button onClick={() => setActiveTab('functions')} className={`text-xs ${activeTab === 'functions' ? 'font-bold' : ''}`}>{languages[language].functions}</button>
               <button onClick={() => setActiveTab('settings')} className={`text-xs ${activeTab === 'settings' ? 'font-bold' : ''}`}>{languages[language].settings}</button>
-              <button onClick={handleUndo} disabled={historyIndex <= 0} className="p-1">⟲</button>
-              <button onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="p-1">⟳</button>
+              <button onClick={handleClear} className="p-1">C</button>
+              <button onClick={changeLanguage} className="text-xs flex items-center justify-center">
+                🌐 {languages[language].name}
+              </button>
             </div>
             
             {activeTab === 'main' && (
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <button onClick={changeLanguage} className="text-xs flex items-center">
-                    🌐 {languages[language].name}
-                  </button>
+                <div className="flex justify-end items-center mb-2">
                   <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
                     {isRadian ? languages[language].radian : languages[language].degree}
                   </button>
@@ -239,10 +212,7 @@
             
             {activeTab === 'functions' && (
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <button onClick={changeLanguage} className="text-xs flex items-center">
-                    🌐 {languages[language].name}
-                  </button>
+                <div className="flex justify-end items-center mb-2">
                   <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
                     {isRadian ? languages[language].radian : languages[language].degree}
                   </button>
