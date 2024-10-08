@@ -174,8 +174,8 @@
       return (
         <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
           <h1 className="text-2xl font-bold text-center mb-4">{languages[language].title}</h1>
-          <div className="mb-2 text-right text-sm h-20 overflow-y-auto font-mono">
-            {history.slice(Math.max(0, historyIndex - 2), historyIndex + 1).map((item, index) => (
+          <div className="mb-2 text-right text-sm h-32 overflow-y-auto font-mono">
+            {history.slice(Math.max(0, historyIndex - 4), historyIndex + 1).map((item, index) => (
               <div key={index} className="mb-1">{item}</div>
             ))}
           </div>
