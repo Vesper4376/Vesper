@@ -71,6 +71,7 @@
         bookmark: 'Bookmark',
         visitors: 'Visitors',
         openPopup: 'Open in Popup',
+        bookmarkInstructions: "Press Ctrl+D (or Cmd+D on Mac) to bookmark this page.",
       },
       ko: {
         name: '한국어',
@@ -86,6 +87,7 @@
         bookmark: '즐겨찾기',
         visitors: '방문자',
         openPopup: '팝업으로 열기',
+        bookmarkInstructions: "이 페이지를 북마크하려면 Ctrl+D(Mac에서는 Cmd+D)를 누르세요.",
       },
     };
 
@@ -294,14 +296,9 @@
             setVisitorCount(prevCount => prevCount + 1);
         }, []);
 
-        const handleBookmark = () => {
-            if (window.sidebar && window.sidebar.addPanel) { // Firefox
-                window.sidebar.addPanel(document.title, window.location.href, "");
-            } else if (window.external && ('AddFavorite' in window.external)) { // IE
-                window.external.AddFavorite(window.location.href, document.title);
-            } else { // Chrome, Safari, Opera, etc.
-                alert("Press " + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + " + D to bookmark this page.");
-            }
+        const handleBookmark = (e) => {
+            e.preventDefault();
+            alert(languages[language].bookmarkInstructions);
         };
 
         const openPopup = () => {
