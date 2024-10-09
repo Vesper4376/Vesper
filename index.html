@@ -16,26 +16,9 @@
         }
         #root {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #f0f0f0;
-        }
-        .visitor-counter {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        .bookmark-button {
-            display: block;
-            width: 200px;
-            margin: 10px auto;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
         }
     </style>
 </head>
@@ -43,7 +26,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    // 기존 계산기 코드 시작
     const languages = {
       en: {
         name: 'English',
@@ -72,46 +54,223 @@
     };
 
     const Calculator = () => {
-      // ... (기존 계산기 코드)
-    };
-
-    ReactDOM.render(<Calculator />, document.getElementById('root'));
-    // 기존 계산기 코드 끝
-
-    // 방문자 카운터와 즐겨찾기 버튼 추가
-    const CounterAndBookmark = () => {
-      const [visitorCount, setVisitorCount] = React.useState(0);
+      const [display, setDisplay] = React.useState('');
+      const [history, setHistory] = React.useState([]);
+      const [historyIndex, setHistoryIndex] = React.useState(-1);
+      const [cursorPosition, setCursorPosition] = React.useState(0);
+      const [isDarkMode, setIsDarkMode] = React.useState(true);
+      const [isRadian, setIsRadian] = React.useState(true);
+      const [language, setLanguage] = React.useState('en');
+      const [activeTab, setActiveTab] = React.useState('main');
+      const inputRef = React.useRef(null);
 
       React.useEffect(() => {
-        let count = localStorage.getItem('visitorCount') || 0;
-        count++;
-        setVisitorCount(count);
-        localStorage.setItem('visitorCount', count);
-      }, []);
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }, [cursorPosition, display]);
 
-      const addBookmark = () => {
-        if (window.sidebar && window.sidebar.addPanel) { // Firefox
-          window.sidebar.addPanel(document.title, window.location.href, '');
-        } else if (window.external && ('AddFavorite' in window.external)) { // IE
-          window.external.AddFavorite(location.href, document.title);
-        } else { // Chrome, Safari, Opera, etc.
-          alert('Press ' + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + ' + D to bookmark this page.');
+      const handleClick = (value) => {
+        setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
+        setCursorPosition(prev => prev + value.length);
+      };
+
+      const handleCalculate = () => {
+        try {
+          const result = eval(display).toString();
+          const newEntry = `${display} = ${result}`;
+          setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
+          setHistoryIndex(prev => prev + 1);
+          setDisplay('');
+          setCursorPosition(0);
+        } catch (error) {
+          setDisplay('Error');
+          setCursorPosition(5);
         }
       };
 
+      const handleBackspace = () => {
+        if (cursorPosition > 0) {
+          setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
+          setCursorPosition(prev => prev - 1);
+        }
+      };
+
+      const handleCursorMove = (direction) => {
+        if (direction === 'left' && cursorPosition > 0) {
+          setCursorPosition(prev => prev - 1);
+        } else if (direction === 'right' && cursorPosition < display.length) {
+          setCursorPosition(prev => prev + 1);
+        }
+      };
+
+      const handleUndo = () => {
+        if (historyIndex > 0) {
+          setHistoryIndex(prev => prev - 1);
+          const previousEntry = history[historyIndex - 1];
+          const [expression] = previousEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const handleRedo = () => {
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => prev + 1);
+          const nextEntry = history[historyIndex + 1];
+          const [expression] = nextEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const changeLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'ko' : 'en');
+      };
+
+      const mainButtons = [
+        ['a²', 'aᵇ', '|a|', '7', '8', '9', '÷', '%', 'a/b'],
+        ['√', 'ⁿ√', 'π', '4', '5', '6', '×', '←', '→'],
+        ['sin', 'cos', 'tan', '1', '2', '3', '-', '⌫', '⌫'],
+        ['(', ')', '.', '0', '.', 'Ans', '+', '=']
+      ];
+
+      const functionButtons = [
+        ['sin', 'cos', 'tan', 'a^b', '√', 'ⁿ√'],
+        ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'e^x', 'abs', 'round'],
+        ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
+        ['nPr', 'nCr', '!', 'e', 'π', '⏎']
+      ];
+
+      const renderButtons = (buttons) => (
+        <div className="grid grid-cols-6 gap-1">
+          {buttons.map((row, rowIndex) => 
+            row.map((btn, colIndex) => (
+              <button
+                key={`${rowIndex}-${colIndex}`}
+                onClick={() => {
+                  if (btn === '=') handleCalculate();
+                  else if (btn === '÷') handleClick('/');
+                  else if (btn === '×') handleClick('*');
+                  else if (btn === '⌫') handleBackspace();
+                  else if (btn === '⏎') handleCalculate();
+                  else handleClick(btn);
+                }}
+                className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} 
+                  border border-gray-600 rounded-md ${
+                  btn === '⏎' ? 'bg-blue-500 hover:bg-blue-600 text-white' : ''
+                } ${
+                  (btn === 'tan' || btn === 'tan⁻¹' || btn === 'stdevp' || btn === '!') ? 'mr-2' : ''
+                }`}
+              >
+                {btn}
+              </button>
+            ))
+          )}
+        </div>
+      );
+
       return (
-        <div>
-          <div className="visitor-counter">
-            Visitors: <span>{visitorCount}</span>
+        <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+          <h1 className="text-2xl font-bold text-center mb-4">{languages[language].title}</h1>
+          <div className="mb-2 text-right text-sm h-32 overflow-y-auto font-mono">
+            {history.slice(Math.max(0, historyIndex - 4), historyIndex + 1).map((item, index) => (
+              <div key={index} className="mb-1">{item}</div>
+            ))}
           </div>
-          <button onClick={addBookmark} className="bookmark-button">
-            Add to Favorites
-          </button>
+          <input
+            type="text"
+            value={display}
+            onChange={(e) => {
+              setDisplay(e.target.value);
+              setCursorPosition(e.target.selectionStart);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') handleCursorMove('left');
+              if (e.key === 'ArrowRight') handleCursorMove('right');
+              if (e.key === 'Enter') handleCalculate();
+            }}
+            ref={inputRef}
+            className={`w-full mb-2 text-right text-xl p-2 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}
+            style={{ caretColor: isDarkMode ? 'white' : 'black' }}
+          />
+          <div className="w-full">
+            <div className="grid w-full grid-cols-5 mb-2">
+              <button onClick={() => setActiveTab('main')} className={`text-xs ${activeTab === 'main' ? 'font-bold' : ''}`}>{languages[language].main}</button>
+              <button onClick={() => setActiveTab('functions')} className={`text-xs ${activeTab === 'functions' ? 'font-bold' : ''}`}>{languages[language].functions}</button>
+              <button onClick={() => setActiveTab('settings')} className={`text-xs ${activeTab === 'settings' ? 'font-bold' : ''}`}>{languages[language].settings}</button>
+              <button onClick={handleUndo} disabled={historyIndex <= 0} className="p-1">⟲</button>
+              <button onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="p-1">⟳</button>
+            </div>
+            
+            {activeTab === 'main' && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <button onClick={changeLanguage} className="text-xs flex items-center">
+                    🌐 {languages[language].name}
+                  </button>
+                  <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
+                    {isRadian ? languages[language].radian : languages[language].degree}
+                  </button>
+                </div>
+                <div className="grid grid-cols-9 gap-1">
+                  {mainButtons.map((row, rowIndex) => 
+                    row.map((btn, colIndex) => (
+                      <button
+                        key={`${rowIndex}-${colIndex}`}
+                        onClick={() => {
+                          if (btn === '=') handleCalculate();
+                          else if (btn === '÷') handleClick('/');
+                          else if (btn === '×') handleClick('*');
+                          else if (btn === '⌫') handleBackspace();
+                          else if (btn === '←') handleCursorMove('left');
+                          else if (btn === '→') handleCursorMove('right');
+                          else handleClick(btn);
+                        }}
+                        className={`p-1 text-xs ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'} 
+                          border border-gray-600 rounded-md ${
+                          rowIndex === 3 && colIndex === 7 ? 'col-span-2' : ''
+                        } ${
+                          colIndex === 2 || colIndex === 6 ? 'mr-2' : ''
+                        }`}
+                      >
+                        {btn}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'functions' && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <button onClick={changeLanguage} className="text-xs flex items-center">
+                    🌐 {languages[language].name}
+                  </button>
+                  <button onClick={() => setIsRadian(!isRadian)} className="text-xs">
+                    {isRadian ? languages[language].radian : languages[language].degree}
+                  </button>
+                </div>
+                {renderButtons(functionButtons)}
+              </div>
+            )}
+            
+            {activeTab === 'settings' && (
+              <div>
+                <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full mb-2">
+                  {isDarkMode ? '☀️' : '🌙'}
+                  {isDarkMode ? languages[language].lightMode : languages[language].darkMode}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       );
     };
 
-    ReactDOM.render(<CounterAndBookmark />, document.createElement('div'));
+    ReactDOM.render(<Calculator />, document.getElementById('root'));
     </script>
 </body>
 </html>
