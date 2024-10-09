@@ -20,6 +20,22 @@
             align-items: center;
             background-color: #f0f0f0;
         }
+        .visitor-counter {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .bookmark-button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -271,6 +287,30 @@
     };
 
     ReactDOM.render(<Calculator />, document.getElementById('root'));
+    </script>
+
+    <div class="visitor-counter">
+        Visitors: <span id="visitorCount">0</span>
+    </div>
+    <a href="#" class="bookmark-button" onclick="addBookmark()">Add to Favorites</a>
+
+    <script>
+        // 방문자 카운터 (예시용 - 실제 구현을 위해서는 서버 측 로직이 필요합니다)
+        let count = localStorage.getItem('visitorCount') || 0;
+        count++;
+        document.getElementById('visitorCount').textContent = count;
+        localStorage.setItem('visitorCount', count);
+
+        // 즐겨찾기 기능
+        function addBookmark() {
+            if (window.sidebar && window.sidebar.addPanel) { // Firefox
+                window.sidebar.addPanel(document.title, window.location.href, '');
+            } else if (window.external && ('AddFavorite' in window.external)) { // IE
+                window.external.AddFavorite(location.href, document.title);
+            } else { // Chrome, Safari, Opera, etc.
+                alert('Press ' + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + ' + D to bookmark this page.');
+            }
+        }
     </script>
 </body>
 </html>
