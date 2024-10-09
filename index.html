@@ -1,4 +1,157 @@
-const renderButtons = (buttons) => (
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이중 언어 과학 계산기</title>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body, #root {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #root {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+    // 기존 계산기 코드 시작
+    const languages = {
+      en: {
+        name: 'English',
+        main: 'Main',
+        functions: 'Functions',
+        settings: 'Settings',
+        radian: 'Radian',
+        degree: 'Degree',
+        darkMode: 'Dark Mode',
+        lightMode: 'Light Mode',
+        language: 'Language',
+        title: 'Free Calculator',
+        bookmark: 'Bookmark',
+        visitors: 'Visitors',
+      },
+      ko: {
+        name: '한국어',
+        main: '메인',
+        functions: '함수',
+        settings: '설정',
+        radian: '호도법',
+        degree: '각도법',
+        darkMode: '다크 모드',
+        lightMode: '라이트 모드',
+        language: '언어',
+        title: '무료 계산기',
+        bookmark: '즐겨찾기',
+        visitors: '방문자',
+      },
+    };
+
+    const Calculator = () => {
+      const [display, setDisplay] = React.useState('');
+      const [history, setHistory] = React.useState([]);
+      const [historyIndex, setHistoryIndex] = React.useState(-1);
+      const [cursorPosition, setCursorPosition] = React.useState(0);
+      const [isDarkMode, setIsDarkMode] = React.useState(true);
+      const [isRadian, setIsRadian] = React.useState(true);
+      const [language, setLanguage] = React.useState('en');
+      const [activeTab, setActiveTab] = React.useState('main');
+      const [visitorCount, setVisitorCount] = React.useState(0);
+      const inputRef = React.useRef(null);
+
+      React.useEffect(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        }
+        // 방문자 수 증가
+        setVisitorCount(prev => prev + 1);
+      }, [cursorPosition, display]);
+
+      const handleClick = (value) => {
+        setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
+        setCursorPosition(prev => prev + value.length);
+      };
+
+      const handleCalculate = () => {
+        try {
+          const result = eval(display).toString();
+          const newEntry = `${display} = ${result}`;
+          setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
+          setHistoryIndex(prev => prev + 1);
+          setDisplay('');
+          setCursorPosition(0);
+        } catch (error) {
+          setDisplay('Error');
+          setCursorPosition(5);
+        }
+      };
+
+      const handleBackspace = () => {
+        if (cursorPosition > 0) {
+          setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
+          setCursorPosition(prev => prev - 1);
+        }
+      };
+
+      const handleCursorMove = (direction) => {
+        if (direction === 'left' && cursorPosition > 0) {
+          setCursorPosition(prev => prev - 1);
+        } else if (direction === 'right' && cursorPosition < display.length) {
+          setCursorPosition(prev => prev + 1);
+        }
+      };
+
+      const handleUndo = () => {
+        if (historyIndex > 0) {
+          setHistoryIndex(prev => prev - 1);
+          const previousEntry = history[historyIndex - 1];
+          const [expression] = previousEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const handleRedo = () => {
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => prev + 1);
+          const nextEntry = history[historyIndex + 1];
+          const [expression] = nextEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const changeLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'ko' : 'en');
+      };
+
+      const mainButtons = [
+        ['a²', 'aᵇ', '|a|', '7', '8', '9', '÷', '%', 'a/b'],
+        ['√', 'ⁿ√', 'π', '4', '5', '6', '×', '←', '→'],
+        ['sin', 'cos', 'tan', '1', '2', '3', '-', '⌫', '⌫'],
+        ['(', ')', '.', '0', '.', 'Ans', '+', '=']
+      ];
+
+      const functionButtons = [
+        ['sin', 'cos', 'tan', 'a^b', '√', 'ⁿ√'],
+        ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'e^x', 'abs', 'round'],
+        ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
+        ['nPr', 'nCr', '!', 'e', 'π', '⏎']
+      ];
+            const renderButtons = (buttons) => (
         <div className="grid grid-cols-6 gap-1">
           {buttons.map((row, rowIndex) => 
             row.map((btn, colIndex) => (
