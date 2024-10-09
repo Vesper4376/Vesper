@@ -16,7 +16,6 @@
         }
         #root {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #f0f0f0;
@@ -27,7 +26,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-    // 기존 계산기 코드 시작
     const languages = {
       en: {
         name: 'English',
@@ -40,8 +38,6 @@
         lightMode: 'Light Mode',
         language: 'Language',
         title: 'Free Calculator',
-        bookmark: 'Bookmark',
-        visitors: 'Visitors',
       },
       ko: {
         name: '한국어',
@@ -54,8 +50,6 @@
         lightMode: '라이트 모드',
         language: '언어',
         title: '무료 계산기',
-        bookmark: '즐겨찾기',
-        visitors: '방문자',
       },
     };
 
@@ -68,7 +62,6 @@
       const [isRadian, setIsRadian] = React.useState(true);
       const [language, setLanguage] = React.useState('en');
       const [activeTab, setActiveTab] = React.useState('main');
-      const [visitorCount, setVisitorCount] = React.useState(0);
       const inputRef = React.useRef(null);
 
       React.useEffect(() => {
@@ -76,8 +69,6 @@
           inputRef.current.focus();
           inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
         }
-        // 방문자 수 증가
-        setVisitorCount(prev => prev + 1);
       }, [cursorPosition, display]);
 
       const handleClick = (value) => {
@@ -151,7 +142,8 @@
         ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
         ['nPr', 'nCr', '!', 'e', 'π', '⏎']
       ];
-            const renderButtons = (buttons) => (
+
+      const renderButtons = (buttons) => (
         <div className="grid grid-cols-6 gap-1">
           {buttons.map((row, rowIndex) => 
             row.map((btn, colIndex) => (
@@ -178,16 +170,6 @@
           )}
         </div>
       );
-
-      const handleBookmark = () => {
-        if (window.sidebar && window.sidebar.addPanel) { // Firefox
-          window.sidebar.addPanel(document.title, window.location.href, "");
-        } else if (window.external && ('AddFavorite' in window.external)) { // IE
-          window.external.AddFavorite(window.location.href, document.title);
-        } else { // Chrome, Safari, Opera, etc.
-          alert("Press " + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + " + D to bookmark this page.");
-        }
-      };
 
       return (
         <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
@@ -288,43 +270,7 @@
       );
     };
 
-    // 기존 계산기 코드 끝
-
-    const App = () => {
-      const [visitorCount, setVisitorCount] = React.useState(0);
-      const [language, setLanguage] = React.useState('en');
-
-      React.useEffect(() => {
-        setVisitorCount(prev => prev + 1);
-      }, []);
-
-      const handleBookmark = () => {
-        if (window.sidebar && window.sidebar.addPanel) { // Firefox
-          window.sidebar.addPanel(document.title, window.location.href, "");
-        } else if (window.external && ('AddFavorite' in window.external)) { // IE
-          window.external.AddFavorite(window.location.href, document.title);
-        } else { // Chrome, Safari, Opera, etc.
-          alert("Press " + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + " + D to bookmark this page.");
-        }
-      };
-
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-          <Calculator setLanguage={setLanguage} />
-          <div className="mt-4 text-center">
-            <p>{languages[language].visitors}: {visitorCount}</p>
-            <button 
-              onClick={handleBookmark}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              {languages[language].bookmark}
-            </button>
-          </div>
-        </div>
-      );
-    };
-
-    ReactDOM.render(<App />, document.getElementById('root'));
+    ReactDOM.render(<Calculator />, document.getElementById('root'));
     </script>
 </body>
 </html>
