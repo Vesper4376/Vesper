@@ -57,8 +57,7 @@
       const [activeTab, setActiveTab] = React.useState('main');
       const inputRef = React.useRef(null);
       const isPopup = window.opener != null;
-
-      React.useEffect(() => {
+        React.useEffect(() => {
         loadState();
         window.addEventListener('storage', handleStorageChange);
         return () => {
@@ -127,7 +126,8 @@
           saveState();
         }
       };
-        const handleBackspace = () => {
+
+      const handleBackspace = () => {
         if (cursorPosition > 0) {
           setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
           setCursorPosition(prev => prev - 1);
@@ -142,8 +142,7 @@
           setCursorPosition(prev => prev + 1);
         }
       };
-
-      const handleUndo = () => {
+        const handleUndo = () => {
         if (historyIndex > 0) {
           setHistoryIndex(prev => prev - 1);
           const previousEntry = history[historyIndex - 1];
@@ -185,16 +184,13 @@
           'CalculatorPopup',
           `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
         );
+        window.close();  // 메인 페이지를 닫습니다.
       };
 
       const returnToMainPage = () => {
-        if (window.opener && !window.opener.closed) {
-          saveState();
-          window.opener.location.reload();
-          window.close();
-        } else {
-          window.location.href = window.location.origin + window.location.pathname;
-        }
+        saveState();
+        window.open(window.location.origin + window.location.pathname, '_blank');
+        window.close();
       };
 
       const mainButtons = [
@@ -210,8 +206,7 @@
         ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
         ['nPr', 'nCr', '!', 'e', 'π', '⏎']
       ];
-
-      const renderButtons = (buttons) => (
+        const renderButtons = (buttons) => (
         <div className="grid grid-cols-6 gap-1">
           {buttons.map((row, rowIndex) => 
             row.map((btn, colIndex) => (
@@ -238,7 +233,8 @@
           )}
         </div>
       );
-        return (
+
+      return (
         <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
           <h1 className="text-2xl font-bold text-center mb-4">{languages[language].title}</h1>
           <div className="mb-2 text-right text-sm h-32 overflow-y-auto font-mono">
