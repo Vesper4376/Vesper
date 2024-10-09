@@ -62,11 +62,59 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
-    // 언어 설정과 Calculator 컴포넌트는 이전과 동일합니다.
-    // 여기에 이전 코드의 언어 설정과 Calculator 컴포넌트를 붙여넣으세요.
+        const languages = {
+      en: {
+        name: 'English',
+        main: 'Main',
+        functions: 'Functions',
+        settings: 'Settings',
+        radian: 'Radian',
+        degree: 'Degree',
+        darkMode: 'Dark Mode',
+        lightMode: 'Light Mode',
+        language: 'Language',
+        title: 'Free Calculator',
+        bookmark: 'Bookmark',
+        visitors: 'Visitors',
+        openPopup: 'Open in Popup',
+      },
+      ko: {
+        name: '한국어',
+        main: '메인',
+        functions: '함수',
+        settings: '설정',
+        radian: '호도법',
+        degree: '각도법',
+        darkMode: '다크 모드',
+        lightMode: '라이트 모드',
+        language: '언어',
+        title: '무료 계산기',
+        bookmark: '즐겨찾기',
+        visitors: '방문자',
+        openPopup: '팝업으로 열기',
+      },
+    };
 
+    const Calculator = ({ language, setLanguage }) => {
+      const [display, setDisplay] = React.useState('');
+      const [history, setHistory] = React.useState([]);
+      const [historyIndex, setHistoryIndex] = React.useState(-1);
+      const [cursorPosition, setCursorPosition] = React.useState(0);
+      const [isDarkMode, setIsDarkMode] = React.useState(true);
+      const [isRadian, setIsRadian] = React.useState(true);
+      const [activeTab, setActiveTab] = React.useState('main');
+      const inputRef = React.useRef(null);
+
+      // Calculator 컴포넌트의 나머지 로직은 이전과 동일합니다.
+      // 여기에 이전에 제공된 Calculator 컴포넌트의 나머지 부분을 붙여넣으세요.
+
+      return (
+        <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+          {/* Calculator 컴포넌트의 UI 부분 */}
+        </div>
+      );
+    };
 const App = () => {
         const [visitorCount, setVisitorCount] = React.useState(1);
         const [language, setLanguage] = React.useState('en');
