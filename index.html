@@ -19,7 +19,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            min-height: 100vh;
             background-color: #f0f0f0;
         }
         .calculator {
@@ -37,7 +37,7 @@
             margin-top: 20px;
             font-family: 'Courier New', monospace;
         }
-        .bookmark-btn {
+        .bookmark-btn, .popup-btn {
             background-color: #8B0000;
             color: white;
             padding: 10px 20px;
@@ -50,20 +50,13 @@
         }
         .popup-btn {
             background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const languages = {
+    const languages = {
       en: {
         name: 'English',
         main: 'Main',
@@ -106,16 +99,194 @@
       const [activeTab, setActiveTab] = React.useState('main');
       const inputRef = React.useRef(null);
 
-      // Calculator 컴포넌트의 나머지 로직은 이전과 동일합니다.
-      // 여기에 이전에 제공된 Calculator 컴포넌트의 나머지 부분을 붙여넣으세요.
+      React.useEffect(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        }
+      }, [cursorPosition, display]);
+
+      const handleClick = (value) => {
+        setDisplay(prev => prev.slice(0, cursorPosition) + value + prev.slice(cursorPosition));
+        setCursorPosition(prev => prev + value.length);
+      };
+
+      const handleCalculate = () => {
+        try {
+          const result = eval(display).toString();
+          const newEntry = `${display} = ${result}`;
+          setHistory(prev => [...prev.slice(0, historyIndex + 1), newEntry]);
+          setHistoryIndex(prev => prev + 1);
+          setDisplay(result);
+          setCursorPosition(result.length);
+        } catch (error) {
+          setDisplay('Error');
+          setCursorPosition(5);
+        }
+      };
+
+      const handleBackspace = () => {
+        if (cursorPosition > 0) {
+          setDisplay(prev => prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition));
+          setCursorPosition(prev => prev - 1);
+        }
+      };
+
+      const handleCursorMove = (direction) => {
+        if (direction === 'left' && cursorPosition > 0) {
+          setCursorPosition(prev => prev - 1);
+        } else if (direction === 'right' && cursorPosition < display.length) {
+          setCursorPosition(prev => prev + 1);
+        }
+      };
+
+      const handleUndo = () => {
+        if (historyIndex > 0) {
+          setHistoryIndex(prev => prev - 1);
+          const previousEntry = history[historyIndex - 1];
+          const [expression] = previousEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const handleRedo = () => {
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => prev + 1);
+          const nextEntry = history[historyIndex + 1];
+          const [expression] = nextEntry.split(' = ');
+          setDisplay(expression);
+          setCursorPosition(expression.length);
+        }
+      };
+
+      const changeLanguage = () => {
+        setLanguage(prev => prev === 'en' ? 'ko' : 'en');
+      };
+
+      const mainButtons = [
+        ['7', '8', '9', '÷'],
+        ['4', '5', '6', '×'],
+        ['1', '2', '3', '-'],
+        ['0', '.', '=', '+']
+      ];
+
+      const functionButtons = [
+        ['sin', 'cos', 'tan', '√'],
+        ['asin', 'acos', 'atan', 'x²'],
+        ['(', ')', 'π', 'e'],
+        ['log', 'ln', '!', '^']
+      ];
+
+      const renderButtons = (buttons) => (
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px'}}>
+          {buttons.map((row, rowIndex) => 
+            row.map((btn, colIndex) => (
+              <button
+                key={`${rowIndex}-${colIndex}`}
+                onClick={() => {
+                  if (btn === '=') handleCalculate();
+                  else if (btn === '÷') handleClick('/');
+                  else if (btn === '×') handleClick('*');
+                  else handleClick(btn);
+                }}
+                style={{
+                  padding: '10px',
+                  fontSize: '16px',
+                  backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
+                  color: isDarkMode ? 'white' : 'black',
+                  border: '1px solid #666',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                {btn}
+              </button>
+            ))
+          )}
+        </div>
+      );
 
       return (
-        <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-          {/* Calculator 컴포넌트의 UI 부분 */}
+        <div className="calculator" style={{color: isDarkMode ? 'white' : 'black'}}>
+          <h1 style={{textAlign: 'center', marginBottom: '20px'}}>{languages[language].title}</h1>
+          <div style={{marginBottom: '10px', textAlign: 'right', height: '60px', overflowY: 'auto'}}>
+            {history.slice(Math.max(0, historyIndex - 4), historyIndex + 1).map((item, index) => (
+              <div key={index} style={{marginBottom: '5px'}}>{item}</div>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={display}
+            onChange={(e) => {
+              setDisplay(e.target.value);
+              setCursorPosition(e.target.selectionStart);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') handleCursorMove('left');
+              if (e.key === 'ArrowRight') handleCursorMove('right');
+              if (e.key === 'Enter') handleCalculate();
+            }}
+            ref={inputRef}
+            style={{
+              width: '100%',
+              marginBottom: '10px',
+              textAlign: 'right',
+              fontSize: '24px',
+              padding: '5px',
+              backgroundColor: isDarkMode ? '#222' : 'white',
+              color: isDarkMode ? 'white' : 'black',
+              border: '1px solid #666'
+            }}
+          />
+          <div style={{marginBottom: '10px'}}>
+            <button onClick={() => setActiveTab('main')} style={{marginRight: '5px'}}>{languages[language].main}</button>
+            <button onClick={() => setActiveTab('functions')} style={{marginRight: '5px'}}>{languages[language].functions}</button>
+            <button onClick={() => setActiveTab('settings')} style={{marginRight: '5px'}}>{languages[language].settings}</button>
+            <button onClick={handleUndo} disabled={historyIndex <= 0}>⟲</button>
+            <button onClick={handleRedo} disabled={historyIndex >= history.length - 1}>⟳</button>
+          </div>
+          
+          {activeTab === 'main' && (
+            <div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <button onClick={changeLanguage}>
+                  🌐 {languages[language].name}
+                </button>
+                <button onClick={() => setIsRadian(!isRadian)}>
+                  {isRadian ? languages[language].radian : languages[language].degree}
+                </button>
+              </div>
+              {renderButtons(mainButtons)}
+            </div>
+          )}
+          
+          {activeTab === 'functions' && (
+            <div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <button onClick={changeLanguage}>
+                  🌐 {languages[language].name}
+                </button>
+                <button onClick={() => setIsRadian(!isRadian)}>
+                  {isRadian ? languages[language].radian : languages[language].degree}
+                </button>
+              </div>
+              {renderButtons(functionButtons)}
+            </div>
+          )}
+          
+          {activeTab === 'settings' && (
+            <div>
+              <button onClick={() => setIsDarkMode(!isDarkMode)} style={{width: '100%', marginBottom: '10px'}}>
+                {isDarkMode ? '☀️ ' + languages[language].lightMode : '🌙 ' + languages[language].darkMode}
+              </button>
+            </div>
+          )}
         </div>
       );
     };
-const App = () => {
+
+    const App = () => {
         const [visitorCount, setVisitorCount] = React.useState(1);
         const [language, setLanguage] = React.useState('en');
 
@@ -150,6 +321,7 @@ const App = () => {
                     <div id="popupRoot"></div>
                     <script type="text/babel">
                         ${Calculator.toString()}
+                        ${languages.toString()}
                         ReactDOM.render(<Calculator language="${language}" setLanguage={() => {}} />, document.getElementById('popupRoot'));
                     </script>
                 </body>
