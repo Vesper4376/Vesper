@@ -6,27 +6,10 @@
     <title>무료 온라인 계산기 | Free Online Calculator</title>
     <meta name="description" content="간편하고 무료로 사용할 수 있는 온라인 계산기입니다. 기본 연산부터 고급 수학 함수까지 지원합니다. | Easy-to-use free online calculator supporting basic operations and advanced math functions.">
     <meta name="keywords" content="계산기, 온라인 계산기, 무료 계산기, calculator, online calculator, free calculator">
-    <link rel="canonical" href="https://vesper4376.github.io/Vesper/">
-    <link rel="alternate" hreflang="ko" href="https://vesper4376.github.io/Vesper/">
-    <link rel="alternate" hreflang="en" href="https://vesper4376.github.io/Vesper/en/">
-    <link rel="alternate" hreflang="x-default" href="https://vesper4376.github.io/Vesper/">
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        html, body, #root {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        #root {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f0f0;
-        }
-    </style>
 </head>
 <body>
     <div id="root"></div>
@@ -44,7 +27,8 @@
         lightMode: 'Light Mode',
         language: 'Language',
         title: 'Free Calculator',
-        openInPopup: 'Open in Popup'
+        openInPopup: 'Open in Popup',
+        returnToMainPage: 'Return to Main Page'
       },
       ko: {
         name: '한국어',
@@ -57,7 +41,8 @@
         lightMode: '라이트 모드',
         language: '언어',
         title: '무료 계산기',
-        openInPopup: '팝업으로 열기'
+        openInPopup: '팝업으로 열기',
+        returnToMainPage: '메인 페이지로 돌아가기'
       },
     };
 
@@ -71,6 +56,7 @@
       const [language, setLanguage] = React.useState('ko');
       const [activeTab, setActiveTab] = React.useState('main');
       const inputRef = React.useRef(null);
+      const isPopup = window.opener != null;
 
       React.useEffect(() => {
         if (inputRef.current) {
@@ -148,6 +134,12 @@
           'CalculatorPopup',
           `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
         );
+      };
+
+      const returnToMainPage = () => {
+        if (window.opener) {
+          window.close();
+        }
       };
 
       const mainButtons = [
@@ -288,13 +280,13 @@
             )}
           </div>
           
-          {/* 팝업 버튼 추가 */}
+          {/* 팝업/돌아가기 버튼 */}
           <div className="mt-4 text-center">
             <button
-              onClick={openInPopup}
+              onClick={isPopup ? returnToMainPage : openInPopup}
               className={`px-4 py-2 text-sm ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-md transition duration-300`}
             >
-              {languages[language].openInPopup}
+              {isPopup ? languages[language].returnToMainPage : languages[language].openInPopup}
             </button>
           </div>
         </div>
