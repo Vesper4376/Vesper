@@ -151,8 +151,7 @@
         ['mean', 'stdev', 'stdevp', 'ln', 'log', '⌫'],
         ['nPr', 'nCr', '!', 'e', 'π', '⏎']
       ];
-
-      const renderButtons = (buttons) => (
+        const renderButtons = (buttons) => (
         <div className="grid grid-cols-6 gap-1">
           {buttons.map((row, rowIndex) => 
             row.map((btn, colIndex) => (
@@ -292,9 +291,26 @@
     // 기존 계산기 코드 끝
 
     const App = () => {
+      const [visitorCount, setVisitorCount] = React.useState(0);
+      const [language, setLanguage] = React.useState('en');
+
+      React.useEffect(() => {
+        setVisitorCount(prev => prev + 1);
+      }, []);
+
+      const handleBookmark = () => {
+        if (window.sidebar && window.sidebar.addPanel) { // Firefox
+          window.sidebar.addPanel(document.title, window.location.href, "");
+        } else if (window.external && ('AddFavorite' in window.external)) { // IE
+          window.external.AddFavorite(window.location.href, document.title);
+        } else { // Chrome, Safari, Opera, etc.
+          alert("Press " + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + " + D to bookmark this page.");
+        }
+      };
+
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-          <Calculator />
+          <Calculator setLanguage={setLanguage} />
           <div className="mt-4 text-center">
             <p>{languages[language].visitors}: {visitorCount}</p>
             <button 
