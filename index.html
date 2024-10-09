@@ -3,13 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>무료 온라인 계산기 | Free Online Calculator</title>
-    <meta name="description" content="간편하고 무료로 사용할 수 있는 온라인 계산기입니다. 기본 연산부터 고급 수학 함수까지 지원합니다. | Easy-to-use free online calculator supporting basic operations and advanced math functions.">
-    <meta name="keywords" content="계산기, 온라인 계산기, 무료 계산기, calculator, online calculator, free calculator">
-    <link rel="canonical" href="https://vesper4376.github.io/Vesper/">
-    <link rel="alternate" hreflang="ko" href="https://vesper4376.github.io/Vesper/">
-    <link rel="alternate" hreflang="en" href="https://vesper4376.github.io/Vesper/en/">
-    <link rel="alternate" hreflang="x-default" href="https://vesper4376.github.io/Vesper/">
+    <title>이중 언어 과학 계산기</title>
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -22,6 +16,7 @@
         }
         #root {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #f0f0f0;
@@ -32,6 +27,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+    // 기존 계산기 코드 시작
     const languages = {
       en: {
         name: 'English',
@@ -44,6 +40,8 @@
         lightMode: 'Light Mode',
         language: 'Language',
         title: 'Free Calculator',
+        bookmark: 'Bookmark',
+        visitors: 'Visitors',
       },
       ko: {
         name: '한국어',
@@ -56,6 +54,8 @@
         lightMode: '라이트 모드',
         language: '언어',
         title: '무료 계산기',
+        bookmark: '즐겨찾기',
+        visitors: '방문자',
       },
     };
 
@@ -66,8 +66,9 @@
       const [cursorPosition, setCursorPosition] = React.useState(0);
       const [isDarkMode, setIsDarkMode] = React.useState(true);
       const [isRadian, setIsRadian] = React.useState(true);
-      const [language, setLanguage] = React.useState('ko');
+      const [language, setLanguage] = React.useState('en');
       const [activeTab, setActiveTab] = React.useState('main');
+      const [visitorCount, setVisitorCount] = React.useState(0);
       const inputRef = React.useRef(null);
 
       React.useEffect(() => {
@@ -75,6 +76,8 @@
           inputRef.current.focus();
           inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
         }
+        // 방문자 수 증가
+        setVisitorCount(prev => prev + 1);
       }, [cursorPosition, display]);
 
       const handleClick = (value) => {
@@ -177,6 +180,16 @@
         </div>
       );
 
+      const handleBookmark = () => {
+        if (window.sidebar && window.sidebar.addPanel) { // Firefox
+          window.sidebar.addPanel(document.title, window.location.href, "");
+        } else if (window.external && ('AddFavorite' in window.external)) { // IE
+          window.external.AddFavorite(window.location.href, document.title);
+        } else { // Chrome, Safari, Opera, etc.
+          alert("Press " + (navigator.userAgent.toLowerCase().indexOf('mac') != -1 ? 'Command/Cmd' : 'CTRL') + " + D to bookmark this page.");
+        }
+      };
+
       return (
         <div className={`w-full max-w-md p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'} rounded-lg shadow-md border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
           <h1 className="text-2xl font-bold text-center mb-4">{languages[language].title}</h1>
@@ -275,8 +288,27 @@
         </div>
       );
     };
-              
-    ReactDOM.render(<Calculator />, document.getElementById('root'));
+
+    // 기존 계산기 코드 끝
+
+    const App = () => {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+          <Calculator />
+          <div className="mt-4 text-center">
+            <p>{languages[language].visitors}: {visitorCount}</p>
+            <button 
+              onClick={handleBookmark}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              {languages[language].bookmark}
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
